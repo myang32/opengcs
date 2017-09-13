@@ -1,9 +1,11 @@
 package transport
 
 import (
-	"github.com/sirupsen/logrus"
+	"syscall"
+
 	"github.com/linuxkit/virtsock/pkg/vsock"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -22,9 +24,21 @@ var _ Transport = &VsockTransport{}
 func (t *VsockTransport) Dial(port uint32) (Connection, error) {
 	logrus.Infof("vsock Dial port (%d)", port)
 
-	conn, err := vsock.Dial(vmaddrCidHost, port)
+	var conn Connection
+	var err error
+
+	conn, err = vsock.Dial(vmaddrCidHost, port)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed connecting the VsockConnection")
+		logrus.Debugf("opengcs: re-dial %d", port)
+		cause := errors.Cause(err)
+		if errno, ok := cause.(syscall.Errno); ok && errno == syscall.ETIMEDOUT {
+			conn, err = vsock.Dial(vmaddrCidHost, port)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed connecting the VsockConnection twice")
+			}
+		} else {
+			return nil, errors.Wrap(err, "failed connecting the VsockConnection")
+		}
 	}
 	logrus.Infof("vsock Connect port (%d)", port)
 
