@@ -198,7 +198,7 @@ func (c *gcsCore) mountMappedVirtualDisks(disks []prot.MappedVirtualDisk, mounts
 				return errors.New("we do not currently support mapping virtual disks inside the container namespace")
 			}
 			mount := mounts[i]
-			if err := c.OS.MkdirAll(disk.ContainerPath, 0700); err != nil {
+			if err := c.OS.MkdirAll(disk.ContainerPath, 0755); err != nil {
 				return errors.Wrapf(err, "failed to create directory for mapped virtual disk %s", disk.ContainerPath)
 			}
 
@@ -259,7 +259,7 @@ func (c *gcsCore) mountMappedDirectory(dir *prot.MappedDirectory) error {
 	if !dir.CreateInUtilityVM {
 		return errors.New("we do not currently support mapping directories inside the container namespace")
 	}
-	if err := c.OS.MkdirAll(dir.ContainerPath, 0700); err != nil {
+	if err := c.OS.MkdirAll(dir.ContainerPath, 755); err != nil {
 		return errors.Wrapf(err, "failed to create directory for mapped directory %s", dir.ContainerPath)
 	}
 	conn, err := c.vsock.Dial(dir.Port)
