@@ -507,12 +507,16 @@ func ExtractArchive(in io.Reader, out io.Writer, args []string) error {
 		return ErrInvalid
 	}
 
-	opts, err := ReadTarOptions(in)
+	in1, _ := os.Create("/tmp/data.tmp")
+	io.Copy(in1, in)
+	in1.Seek(0, 0)
+
+	opts, err := ReadTarOptions(in1)
 	if err != nil {
 		return err
 	}
 
-	if err := archive.Untar(in, args[0], opts); err != nil {
+	if err := archive.Untar(in1, args[0], opts); err != nil {
 		return err
 	}
 	return nil
