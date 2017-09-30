@@ -7,6 +7,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -507,10 +508,23 @@ func ExtractArchive(in io.Reader, out io.Writer, args []string) error {
 		return ErrInvalid
 	}
 
-	in1, _ := os.Create("/tmp/data.tmp")
-	io.Copy(in1, in)
-	in1.Seek(0, 0)
+	in1, err := os.Create("/tmp/holddata.tmp")
+	if err != nil {
+		return err
+	}
 
+	_, err = io.Copy(in1, in)
+	if err != nil {
+		return err
+	}
+
+	_, err = in1.Seek(0, 0)
+	if err != nil {
+		return err
+	}
+	defer in1.Close()
+
+	ioutil.WriteFile("/tmp/starttar.tmp", []byte("start"), 0644)
 	opts, err := ReadTarOptions(in1)
 	if err != nil {
 		return err
