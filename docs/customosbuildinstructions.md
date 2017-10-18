@@ -21,7 +21,7 @@ please follow the instructions:
 
 - Build your kernel
 
- Cuttently supported Linux kenerl versions:
+ Cuttently supported Linux kernel versions:
 
  - [How to build 4.11.x based kernel](../kernel/patches-4.11.x)
     
